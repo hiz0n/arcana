@@ -55,6 +55,9 @@ const MobileTarotCardSelector = ({ maxSelection = 3, onSelectionChange, selected
   const lastXRef = useRef(0);
   const lastTimeRef = useRef(0);
   const animationFrameRef = useRef(null);
+  const touchStartXRef = useRef(0);
+  const touchStartYRef = useRef(0);
+  const hasMovedRef = useRef(false);
 
   // 중앙 카드로 스냅
   const snapToCenter = useCallback(() => {
@@ -100,7 +103,10 @@ const MobileTarotCardSelector = ({ maxSelection = 3, onSelectionChange, selected
     if (e.cancelable) {
       e.preventDefault();
     }
-    setIsDragging(true);
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+    hasMovedRef.current = false;
+    setIsDragging(false); // 초기에는 드래그가 아님
     setStartX(e.touches[0].clientX);
     lastXRef.current = x.get();
     lastTimeRef.current = performance.now();
@@ -114,16 +120,29 @@ const MobileTarotCardSelector = ({ maxSelection = 3, onSelectionChange, selected
 
   // 터치 이동
   const handleTouchMove = useCallback((e) => {
-    if (!isDragging) return;
     if (e.cancelable) {
       e.preventDefault();
     }
     
     const currentX = e.touches[0].clientX;
-    const deltaX = currentX - startX;
+    const currentY = e.touches[0].clientY;
+    const deltaX = Math.abs(currentX - touchStartXRef.current);
+    const deltaY = Math.abs(currentY - touchStartYRef.current);
+    
+    // 수평 이동이 수직 이동보다 크면 드래그로 판단
+    if (deltaX > 10 || deltaY > 10) {
+      hasMovedRef.current = true;
+      if (deltaX > deltaY) {
+        setIsDragging(true);
+      }
+    }
+    
+    if (!isDragging && deltaX <= deltaY) return; // 수직 스크롤은 무시
+    
+    const moveDeltaX = currentX - startX;
     // 더 세밀한 조절을 위해 감도 조정 (약간 감소)
     const sensitivity = 0.95; /* 약간 감소된 감도로 더 정밀한 제어 */
-    const newX = x.get() + deltaX * sensitivity;
+    const newX = x.get() + moveDeltaX * sensitivity;
     
     // 제한: 사용 가능한 카드 범위 내에서만 이동
     const availableCount = availableCards.length;
@@ -136,11 +155,20 @@ const MobileTarotCardSelector = ({ maxSelection = 3, onSelectionChange, selected
   }, [isDragging, startX, x, availableCards.length]);
 
   // 터치 종료 (관성 적용)
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = useCallback((e) => {
+    const wasDragging = isDragging;
+    const hasMoved = hasMovedRef.current;
+    
     setIsDragging(false);
+    hasMovedRef.current = false;
     
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
+    }
+    
+    // 드래그가 아니고 이동도 없었다면 클릭으로 처리하지 않음 (카드의 onTouchEnd가 처리)
+    if (!wasDragging && !hasMoved) {
+      return;
     }
     
     // 관성 적용
@@ -183,7 +211,7 @@ const MobileTarotCardSelector = ({ maxSelection = 3, onSelectionChange, selected
         snapToCenter();
       }, 50); /* 지연 시간 감소로 빠른 스냅 */
     }
-  }, [velocity, x, availableCards.length, snapToCenter]);
+  }, [isDragging, velocity, x, availableCards.length, snapToCenter]);
 
 
   // 카드 선택
@@ -232,14 +260,25 @@ const MobileTarotCardSelector = ({ maxSelection = 3, onSelectionChange, selected
     if (!container) return;
 
     const touchStartHandler = (e) => {
+      // 카드 요소를 클릭한 경우는 컨테이너 이벤트 무시
+      const cardItem = e.target.closest('.mobile-card-item');
+      if (cardItem) {
+        return; // 카드 클릭은 카드의 이벤트 핸들러가 처리
+      }
       handleTouchStart(e);
     };
 
     const touchMoveHandler = (e) => {
+      // 카드 요소를 드래그하는 경우도 처리
       handleTouchMove(e);
     };
 
     const touchEndHandler = (e) => {
+      // 카드 요소를 클릭한 경우는 컨테이너 이벤트 무시
+      const cardItem = e.target.closest('.mobile-card-item');
+      if (cardItem && !hasMovedRef.current) {
+        return; // 카드 클릭은 카드의 이벤트 핸들러가 처리
+      }
       handleTouchEnd(e);
     };
 
@@ -289,20 +328,46 @@ const MobileTarotCardSelector = ({ maxSelection = 3, onSelectionChange, selected
               style={{
                 x: baseX,
                 scale,
-                opacity,
                 zIndex,
                 cursor: isFlipped ? 'default' : 'pointer',
               }}
               animate={{
                 scale,
-                opacity,
               }}
               transition={{ duration: 0.25, ease: 'easeOut' }} /* 더 부드러운 애니메이션 */
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 // 뒤집힌 카드나 이미 선택된 카드는 클릭 불가
-                if (!isDragging && !isFlipped && localSelectedCards.length < maxSelection) {
+                if (!isFlipped && localSelectedCards.length < maxSelection) {
                   handleCardSelect(card);
                 }
+              }}
+              onTouchStart={(e) => {
+                e.stopPropagation();
+                // 카드 터치 시작 시 이동 여부 초기화
+                touchStartXRef.current = e.touches[0].clientX;
+                touchStartYRef.current = e.touches[0].clientY;
+                hasMovedRef.current = false;
+              }}
+              onTouchMove={(e) => {
+                e.stopPropagation();
+                // 이동 감지
+                const deltaX = Math.abs(e.touches[0].clientX - touchStartXRef.current);
+                const deltaY = Math.abs(e.touches[0].clientY - touchStartYRef.current);
+                if (deltaX > 5 || deltaY > 5) {
+                  hasMovedRef.current = true;
+                }
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // 터치 종료 시 클릭 처리 (드래그가 아닌 경우)
+                if (!hasMovedRef.current && !isFlipped && localSelectedCards.length < maxSelection) {
+                  handleCardSelect(card);
+                }
+                // 리셋
+                hasMovedRef.current = false;
               }}
             >
               <motion.div
@@ -319,17 +384,15 @@ const MobileTarotCardSelector = ({ maxSelection = 3, onSelectionChange, selected
                       draggable={false}
                     />
                   </div>
-                  {/* 앞면 - 뒤집힌 경우에만 DOM에 렌더링 */}
-                  {isFlipped ? (
-                    <div className="mobile-card-front">
-                      <img
-                        src={card.image}
-                        alt={card.name}
-                        className="mobile-card-front-image"
-                        draggable={false}
-                      />
-                    </div>
-                  ) : null}
+                  {/* 앞면 - 항상 DOM에 렌더링 (CSS로 표시/숨김 제어) */}
+                  <div className="mobile-card-front">
+                    <img
+                      src={card.image}
+                      alt={card.name}
+                      className="mobile-card-front-image"
+                      draggable={false}
+                    />
+                  </div>
                 </div>
               </motion.div>
               
