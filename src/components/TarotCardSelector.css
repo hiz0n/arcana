@@ -1,0 +1,29 @@
+.tarot-card-selector {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 반원 형태 카드 컨테이너 */
+.arc-card-container {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  margin-bottom: 40px;
+  overflow: visible;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .arc-card-container {
+    height: 400px;
+    margin-bottom: 30px;
+  }
+}
+

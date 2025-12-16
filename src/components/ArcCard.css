@@ -1,0 +1,78 @@
+.arc-card {
+  width: 180px;
+  height: 280px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 768px) {
+  .arc-card {
+    width: 140px;
+    height: 220px;
+  }
+}
+
+.arc-card-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.arc-card-front {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  background: #fff;
+  backface-visibility: hidden;
+}
+
+.arc-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.arc-card.center-card {
+  cursor: pointer;
+}
+
+.arc-card.center-card .arc-card-front {
+  box-shadow: 0 12px 32px rgba(255, 215, 0, 0.5),
+              0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.arc-card.selected {
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+.center-indicator {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 215, 0, 0.9);
+  color: #000;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+}
+
+@media (max-width: 768px) {
+  .center-indicator {
+    font-size: 11px;
+    padding: 5px 10px;
+    bottom: -25px;
+  }
+}
+

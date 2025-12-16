@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="cardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0c9a4;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#d7a966;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9f5c41;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 배경 원 -->
+  <circle cx="32" cy="32" r="30" fill="#0c0820" stroke="url(#cardGradient)" stroke-width="2"/>
+  
+  <!-- 타로 카드 모양 -->
+  <rect x="18" y="14" width="28" height="36" rx="4" fill="url(#cardGradient)" opacity="0.9"/>
+  <rect x="20" y="16" width="24" height="32" rx="2" fill="#0c0820"/>
+  
+  <!-- 카드 안쪽 별 -->
+  <path d="M 32 24 L 33 28 L 37 28 L 34 30.5 L 35 34 L 32 31.5 L 29 34 L 30 30.5 L 27 28 L 31 28 Z" 
+        fill="url(#cardGradient)" opacity="0.8"/>
+</svg>
+
+
+
