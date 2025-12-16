@@ -97,7 +97,9 @@ const MobileTarotCardSelector = ({ maxSelection = 3, onSelectionChange, selected
 
   // 터치 시작
   const handleTouchStart = useCallback((e) => {
-    e.preventDefault();
+    if (e.cancelable) {
+      e.preventDefault();
+    }
     setIsDragging(true);
     setStartX(e.touches[0].clientX);
     lastXRef.current = x.get();
@@ -113,7 +115,9 @@ const MobileTarotCardSelector = ({ maxSelection = 3, onSelectionChange, selected
   // 터치 이동
   const handleTouchMove = useCallback((e) => {
     if (!isDragging) return;
-    e.preventDefault();
+    if (e.cancelable) {
+      e.preventDefault();
+    }
     
     const currentX = e.touches[0].clientX;
     const deltaX = currentX - startX;
@@ -222,14 +226,40 @@ const MobileTarotCardSelector = ({ maxSelection = 3, onSelectionChange, selected
     }
   }, [selectedCards, localSelectedCards]);
 
+  // 터치 이벤트를 직접 등록하여 passive 옵션 제어
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const touchStartHandler = (e) => {
+      handleTouchStart(e);
+    };
+
+    const touchMoveHandler = (e) => {
+      handleTouchMove(e);
+    };
+
+    const touchEndHandler = (e) => {
+      handleTouchEnd(e);
+    };
+
+    // passive: false로 설정하여 preventDefault 가능하게 함
+    container.addEventListener('touchstart', touchStartHandler, { passive: false });
+    container.addEventListener('touchmove', touchMoveHandler, { passive: false });
+    container.addEventListener('touchend', touchEndHandler, { passive: false });
+
+    return () => {
+      container.removeEventListener('touchstart', touchStartHandler);
+      container.removeEventListener('touchmove', touchMoveHandler);
+      container.removeEventListener('touchend', touchEndHandler);
+    };
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
+
   return (
     <div 
       className="mobile-tarot-selector"
       ref={containerRef}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      style={{ touchAction: 'pan-y' }}
+      style={{ touchAction: 'none' }} /* pan-y 대신 none으로 변경하여 수평 스크롤 제어 */
     >
       <motion.div
         className="mobile-card-stack"
