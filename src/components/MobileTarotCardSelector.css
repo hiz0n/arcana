@@ -84,12 +84,15 @@
     transform: rotateY(0deg);
     -webkit-transform: rotateY(0deg); /* iOS Safari 지원 */
     z-index: 2;
+    opacity: 1;
   }
 
   .mobile-card-front {
     transform: rotateY(180deg);
     -webkit-transform: rotateY(180deg); /* iOS Safari 지원 */
     z-index: 1;
+    opacity: 0;
+    pointer-events: none;
   }
 
   /* 뒤집힌 상태: 앞면 보임 */
@@ -100,14 +103,16 @@
 
   .mobile-card.flipped .mobile-card-back {
     z-index: 1;
-    opacity: 0; /* iOS Safari를 위한 추가 보장 */
+    opacity: 0;
+    pointer-events: none;
   }
 
   .mobile-card.flipped .mobile-card-front {
     z-index: 2;
     transform: rotateY(0deg);
     -webkit-transform: rotateY(0deg); /* iOS Safari 지원 */
-    opacity: 1; /* iOS Safari를 위한 추가 보장 */
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .mobile-card-back-image,
@@ -116,6 +121,14 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    transform: scaleX(1); /* 기본 상태: 정상 방향 */
+    -webkit-transform: scaleX(1); /* iOS Safari 지원 */
+  }
+
+  /* iOS Safari에서 이미지 반전 방지 - 카드가 뒤집힐 때 이미지 방향 보정 */
+  .mobile-card.flipped .mobile-card-front-image {
+    transform: scaleX(-1) rotateY(0deg); /* 좌우반전 보정 */
+    -webkit-transform: scaleX(-1) rotateY(0deg); /* iOS Safari 지원 */
   }
 
   .center-indicator {
