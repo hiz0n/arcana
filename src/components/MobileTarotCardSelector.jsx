@@ -159,14 +159,14 @@ const MobileTarotCardSelector = ({ maxSelection = 3, onSelectionChange, selected
       ref={containerRef}
       style={{ touchAction: 'none' }}
     >
-      {/* 드래그 중: 짧은 transition / 드래그 종료: 매우 부드럽고 느린 전환 */}
+      {/* 드래그 중: 부드러운 따라오기 / 드래그 종료: 매우 느리고 부드러운 전환 */}
       <div
         className="mobile-card-stack"
         style={{
           transform: `translateX(${offsetX}px)`,
           transition: isDragging 
-            ? 'transform 0.08s linear' 
-            : 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+            ? 'transform 0.12s cubic-bezier(0.25, 0.1, 0.25, 1)' 
+            : 'transform 1.2s cubic-bezier(0.05, 0.7, 0.1, 1)',
           willChange: 'transform'
         }}
       >
@@ -190,10 +190,10 @@ const MobileTarotCardSelector = ({ maxSelection = 3, onSelectionChange, selected
                 transform: `translateX(${baseX}px) scale(${scale})`,
                 zIndex,
                 cursor: isFlipped ? 'default' : 'pointer',
-                // 드래그 중에도 스케일 애니메이션 유지 (부드러운 스케일 변화)
+                // 드래그 중에도 스케일 애니메이션 유지 (매우 부드러운 스케일 변화)
                 transition: isDragging 
-                  ? 'transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)' 
-                  : 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)',
+                  ? 'transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)' 
+                  : 'transform 1s cubic-bezier(0.05, 0.7, 0.1, 1)',
                 willChange: 'transform'
               }}
               onClick={(e) => {
